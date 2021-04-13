@@ -9,17 +9,46 @@
 
 namespace ArkShop::QQAndApp {
 
-	void GetOnlineTime(AShooterPlayerController* player_controller, FString* message, EChatSendMode::Type /*unused*/) {
-		if (!IsStoreEnabled(player_controller))
-		{
+	void KillPlayerSelf(AShooterPlayerController* player_controller, FString* message, EChatSendMode::Type /*unused*/) {
+		
+		try {
+			
+		if (ArkApi::GetApiUtils().IsPlayerDead(player_controller))
+			return;
+
+		if (ArkApi::GetApiUtils().IsRidingDino(player_controller)) {
+			ArkApi::GetApiUtils().SendNotification(player_controller, FLinearColor(0, 255, 0), 5, 5, nullptr
+				, ArkApi::Tools::Utf8Decode(GetText("CannotKillCauseDino").ToString()).c_str());
 			return;
 		}
-		const uint64 steam_id = ArkApi::IApiUtils::GetSteamIdFromController(player_controller);
-		auto onlinetime = database->GetOnlineTime(steam_id);
-		ArkApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"), *GetText("GetOnlineTimeOK"), onlinetime);
+		auto* cheat_manager = static_cast<UShooterCheatManager*>(player_controller->CheatManagerField());
+		
+		cheat_manager->KillPlayer(ArkApi::GetApiUtils().GetPlayerID(player_controller));
+		
+		}
+		catch (const std::exception& e) {
+			Log::GetLog()->error(e.what());
+		}
+		
+	}
+
+	void GetOnlineTime(AShooterPlayerController* player_controller, FString* message, EChatSendMode::Type /*unused*/) {
+		try {
+			if (!IsStoreEnabled(player_controller))
+			{
+				return;
+			}
+			const uint64 steam_id = ArkApi::IApiUtils::GetSteamIdFromController(player_controller);
+			auto onlinetime = database->GetOnlineTime(steam_id);
+			ArkApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"), *GetText("GetOnlineTimeOK"), onlinetime);
+		}
+		catch (const std::exception& e) {
+			Log::GetLog()->error(e.what());
+		}
 	}
 
 	void SetQQ(AShooterPlayerController* player_controller, FString* message, EChatSendMode::Type /*unused*/) {
+		try {
 		if (!IsStoreEnabled(player_controller))
 		{
 			return;
@@ -31,19 +60,29 @@ namespace ArkShop::QQAndApp {
 			ArkApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
 				*GetText("SetQQOK"));
 		}
+		}
+		catch (const std::exception& e) {
+			Log::GetLog()->error(e.what());
+		}
+		
 	}
 
 	void SetAppPass(AShooterPlayerController* player_controller, FString* message, EChatSendMode::Type /*unused*/) {
-		if (!IsStoreEnabled(player_controller))
-		{
-			return;
-		}
+		try {
+			if (!IsStoreEnabled(player_controller))
+			{
+				return;
+			}
 		const uint64 steam_id = ArkApi::IApiUtils::GetSteamIdFromController(player_controller);
 		TArray<FString> parsed;
 		message->ParseIntoArray(parsed, L" ", true);
 		if (database->SetAppPass(steam_id, parsed[1].ToString())) {
 			ArkApi::GetApiUtils().SendChatMessage(player_controller, GetText("Sender"),
 				*GetText("SetPassOK"));
+			}
+		}
+		catch (const std::exception& e) {
+			Log::GetLog()->error(e.what());
 		}
 	}
 
@@ -51,6 +90,7 @@ namespace ArkShop::QQAndApp {
 	{
 		auto& commands = ArkApi::GetCommands();
 
+		commands.AddChatCommand(GetText("KillCmd"), &KillPlayerSelf);
 		commands.AddChatCommand(GetText("SetQQCmd"), &SetQQ);
 		commands.AddChatCommand(GetText("SetPassCmd"), &SetAppPass);
 		commands.AddChatCommand(GetText("GetOnlineTime"), &GetOnlineTime);
@@ -61,6 +101,7 @@ namespace ArkShop::QQAndApp {
 	{
 		auto& commands = ArkApi::GetCommands();
 
+		commands.RemoveChatCommand(GetText("KillCmd"));
 		commands.RemoveChatCommand(GetText("SetQQCmd"));
 		commands.RemoveChatCommand(GetText("SetPassCmd"));
 		commands.RemoveChatCommand(GetText("GetOnlineTime"));
