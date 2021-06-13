@@ -45,7 +45,7 @@ bool Hook_AShooterGameMode_HandleNewPlayer(AShooterGameMode* _this, AShooterPlay
 		}
 	}
 
-	ArkShop::QQAndApp::OnlineTime::Get().playerOnline(steam_id);
+	/*ArkShop::QQAndApp::OnlineTime::Get().playerOnline(steam_id);*/
 
 
 	const bool rewards_enabled = ArkShop::config["General"]["TimedPointsReward"]["Enabled"];
@@ -91,7 +91,7 @@ void Hook_AShooterGameMode_Logout(AShooterGameMode* _this, AController* exiting)
 
 	const uint64 steam_id = ArkApi::IApiUtils::GetSteamIdFromController(exiting);
 
-	ArkShop::QQAndApp::OnlineTime::Get().playerOffline(steam_id);
+	//ArkShop::QQAndApp::OnlineTime::Get().playerOffline(steam_id);
 
 	ArkShop::TimedRewards::Get().RemovePlayer(steam_id);
 

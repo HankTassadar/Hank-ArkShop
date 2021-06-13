@@ -32,6 +32,7 @@ public:
 	virtual bool SetAppPass(uint64 steam_id,std::string Pass) = 0;
 	virtual bool AddOnlineTime(uint64 steam_id, time_t) = 0;
 	virtual int GetOnlineTime(uint64 steam_id) = 0;
+	virtual bool OverrideOnlineTime(uint64 steam_id, time_t time) = 0;
 
 	//Groups
 	virtual bool IsPlayerInGroup(uint64 steam_id, const FString& group) = 0;

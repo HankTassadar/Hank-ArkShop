@@ -268,6 +268,21 @@ public:
 		}
 	}
 
+	bool OverrideOnlineTime(uint64 steam_id, time_t timeonline) override {
+		if (timeonline == 0)
+			return false;
+
+		try
+		{
+			return db_.query(fmt::format("UPDATE {} SET Points = {} WHERE SteamId = {};", table_players_, timeonline, steam_id));
+		}
+		catch (const std::exception& exception)
+		{
+			Log::GetLog()->error("({} {}) Unexpected DB error {}", __FILE__, __FUNCTION__, exception.what());
+			return false;
+		}
+	}
+
 	int GetOnlineTime(uint64 steam_id) override {
 		int onlinetime = 0;
 

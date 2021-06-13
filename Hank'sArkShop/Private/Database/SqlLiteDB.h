@@ -27,8 +27,8 @@ public:
 				"Points integer default 0,"
 				"TotalSpent integer default 0,"
 				"QQ text,"
-				"AppPass text,"
-				"OnlineTime integer default 0"
+				"AppPass text"
+				//"OnlineTime integer default 0"
 				");";
 		}
 		catch (const std::exception& exception)
@@ -263,6 +263,21 @@ public:
 		try
 		{
 			db_ << "UPDATE Players SET OnlineTime = OnlineTime + ? WHERE SteamId = ?;" << (int)(time / 60) << steam_id;
+		}
+		catch (const sqlite::sqlite_exception& exception)
+		{
+			Log::GetLog()->error("({} {}) Unexpected DB error {}", __FILE__, __FUNCTION__, exception.what());
+			return false;
+		}
+
+		return true;
+	}
+
+	bool OverrideOnlineTime(uint64 steam_id, time_t time) override {
+		if (time == 0)return false;
+		try
+		{
+			db_ << "UPDATE Players SET OnlineTime =  ? WHERE SteamId = ?;" << (int)(time / 60) << steam_id;
 		}
 		catch (const sqlite::sqlite_exception& exception)
 		{
